@@ -1,20 +1,27 @@
 //jshint esversion:6
 const express=require("express");
 const app=express();
+require("dotenv").config();
 
 const bodyParser=require("body-parser");
 const ejs=require("ejs");
 const mongoose=require("mongoose");
+const encrypt=require("mongoose-encryption");
 
 app.use("/public",express.static(__dirname+"/public"));
 app.set("view engine","ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 
+console.log(process.env.API_KEY);
+
 mongoose.connect("mongodb://localhost:27017/userdb",{ useUnifiedTopology: true });
-const userSchema={
+const userSchema=new mongoose.Schema({
   email:String,
   password:String
-}
+});
+
+userSchema.plugin(encrypt,{secret:process.env.SECRET,encryptedFields:["password"]});
+
 const User=new mongoose.model("User",userSchema)
 
 app.get("/",function(req,res){
